@@ -1,19 +1,26 @@
-import json
 import ollama
 
-def generate_website(user_prompt):
-    prompt = f"""
-Generate a website.
 
-Return ONLY valid JSON.
+def generate_website(user_prompt):
+
+    print("Connecting to qwen2.5-coder...")
+
+    prompt = f"""
+Generate a small website.
+
+Return ONLY JSON.
+
+Do not add markdown.
 
 Format:
 
 {{
-    "index.html":"...",
-    "style.css":"...",
-    "script.js":"..."
+"index.html":"html code",
+"style.css":"css code",
+"script.js":"javascript code"
 }}
+
+Keep code short.
 
 Task:
 {user_prompt}
@@ -26,7 +33,13 @@ Task:
                 "role": "user",
                 "content": prompt
             }
-        ]
+        ],
+        options={
+            "temperature":0,
+            "num_predict":800
+        }
     )
+
+    print("Model response received")
 
     return response["message"]["content"]
