@@ -1,45 +1,109 @@
 import ollama
+import json
 
-def improve_code(review, html, css, js):
 
-    prompt = f"""
-You are a senior frontend engineer.
+class FixAgent:
+    """
+    Responsible for improving an existing project.
 
-Review feedback:
+    Inputs:
+        - HTML
+        - CSS
+        - JavaScript
+        - Improvement Plan
 
-{review}
+    Output:
+        Dictionary containing:
+            index.html
+            style.css
+            script.js
+    """
 
-Current HTML:
+    def __init__(self, model="qwen2.5-coder:3b"):
+        self.model = model
+
+    def fix_project(
+        self,
+        html: str,
+        css: str,
+        javascript: str,
+        improvement_plan: str
+    ):
+
+        prompt = f"""
+You are a Senior Frontend Engineer.
+
+Your job is to improve an existing website.
+
+------------------------
+CURRENT HTML
+------------------------
 
 {html}
 
-Current CSS:
+------------------------
+CURRENT CSS
+------------------------
 
 {css}
 
-Current JS:
+------------------------
+CURRENT JAVASCRIPT
+------------------------
 
-{js}
+{javascript}
 
-Improve the website.
+------------------------
+IMPROVEMENT PLAN
+------------------------
 
-Return ONLY JSON:
+{improvement_plan}
+
+Requirements:
+
+1. Apply EVERY improvement.
+
+2. Preserve functionality.
+
+3. Do NOT remove existing features.
+
+4. Improve only what is necessary.
+
+5. Return ONLY valid JSON.
+
+Example format:
 
 {{
     "index.html":"...",
     "style.css":"...",
     "script.js":"..."
 }}
+
+No markdown.
+
+No explanations.
+
+No code fences.
 """
 
-    response = ollama.chat(
-        model="qwen2.5-coder:3b",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
+        response = ollama.chat(
+            model=self.model,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            options={
+                "temperature": 0,
+                "num_predict": 1500
             }
-        ]
-    )
+        )
 
-    return response["message"]["content"]
+        result = response["message"]["content"]
+
+        result = result.replace("```json", "")
+        result = result.replace("```", "")
+        result = result.strip()
+
+        return json.loads(result)
